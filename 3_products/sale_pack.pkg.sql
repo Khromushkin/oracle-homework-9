@@ -45,41 +45,42 @@ create or replace package body sale_pack is
         v_sale_id     sale.sale_id%type;
         v_product_rec product%rowtype;
     begin
-        g_is_api := true;
+        savepoint before_create_sale;
 
-        v_sale_id := sale_id_seq.nextval;
+        g_is_api := true;
 
         -- вставляем запись продажи
         insert into sale
             (sale_id, sale_dtime)
-        values (v_sale_id, systimestamp);
+        values (sale_id_seq.nextval, systimestamp)
+        returning sale_id into v_sale_id;
 
-        for i in 1 .. pi_sale_items_array.count
-            loop
-                -- забираем со склада позиции
-                update product_stock
-                set prs_count = prs_count - pi_sale_items_array(i).prd_count
-                where prd_id = pi_sale_items_array(i).prd_id;
+        forall i in pi_sale_items_array.first .. pi_sale_items_array.last
+            -- забираем со склада позиции
+            update product_stock
+            set prs_count = prs_count - pi_sale_items_array(i).prd_count
+            where prd_id = pi_sale_items_array(i).prd_id;
 
-                -- вставляем записи позиций продажи
-                insert into sale_item
-                    (stm_id, prd_id, prd_count, prd_amount, sale_id)
-                select stm_id_seq.nextval,
-                       product.prd_id,
-                       pi_sale_items_array(i).prd_count,
-                       product.prd_cost * pi_sale_items_array(i).prd_count,
-                       v_sale_id
-                from product
-                where prd_id = pi_sale_items_array(i).prd_id;
-            end loop;
-
+        forall i in pi_sale_items_array.first .. pi_sale_items_array.last
+            -- вставляем записи позиций продажи
+            insert into sale_item
+                (stm_id, prd_id, prd_count, prd_amount, sale_id)
+            select stm_id_seq.nextval,
+                   product.prd_id,
+                   pi_sale_items_array(i).prd_count,
+                   product.prd_cost * pi_sale_items_array(i).prd_count,
+                   v_sale_id
+            from product
+            where prd_id = pi_sale_items_array(i).prd_id;
         g_is_api := false;
 
         return v_sale_id;
     exception
         when others then
+            rollback to before_create_sale;
             g_is_api := false;
-            raise_application_error(sqlcode, sqlerrm);
+            raise_application_error(
+                    sqlcode, sqlerrm);
     end;
 
     function get_sale(pi_sale_id sale.sale_id%type) return t_sale_record
@@ -99,37 +100,39 @@ create or replace package body sale_pack is
         return v_sale_record;
     end;
 
-    -- частичный возврат продуктов в продаже
+-- частичный возврат продуктов в продаже
     procedure partial_refund(pi_sale_id sale.sale_id%type,
                              pi_refund_items_array t_sale_items_array) is
     begin
+        savepoint before_partial_refund;
+
         g_is_api := true;
 
-        for i in 1 .. pi_refund_items_array.count
-            loop
-                -- Обновляем продажу с пересчетом суммы позиции
-                update sale_item
-                set prd_count  = prd_count - pi_refund_items_array(i).prd_count,
-                    prd_amount = prd_amount * (prd_count - pi_refund_items_array(i).prd_count) / prd_count
-                where sale_id = pi_sale_id
-                  and prd_id = pi_refund_items_array(i).prd_id;
-
-                update product_stock
-                set prs_count = prs_count + pi_refund_items_array(i).prd_count
-                where prd_id = pi_refund_items_array(i).prd_id;
-            end loop;
+        forall i in pi_refund_items_array.first .. pi_refund_items_array.last
+            -- Обновляем продажу с пересчетом суммы позиции
+            update sale_item
+            set prd_count  = prd_count - pi_refund_items_array(i).prd_count,
+                prd_amount = prd_amount * (prd_count - pi_refund_items_array(i).prd_count) / prd_count
+            where sale_id = pi_sale_id
+              and prd_id = pi_refund_items_array(i).prd_id;
+        forall i in pi_refund_items_array.first .. pi_refund_items_array.last
+            update product_stock
+            set prs_count = prs_count + pi_refund_items_array(i).prd_count
+            where prd_id = pi_refund_items_array(i).prd_id;
 
         g_is_api := false;
 
     exception
         when others then
+            rollback to before_partial_refund;
             g_is_api := false;
             raise_application_error(sqlcode, sqlerrm);
     end;
 
-    -- Полный возврат продуктов в продаже
+-- Полный возврат продуктов в продаже
     procedure refund(pi_sale_id sale.sale_id%type) is
     begin
+        savepoint before_refund;
 
         g_is_api := true;
         -- Возвращаем на склад
@@ -155,11 +158,12 @@ create or replace package body sale_pack is
 
     exception
         when others then
+            rollback to before_refund;
             g_is_api := false;
             raise_application_error(sqlcode, sqlerrm);
     end;
 
-    -- Триггер аудита
+-- Триггер аудита
     procedure
         change_sale_item_tr_body_dml(pi_stm_id sale_item.stm_id%type,
                                      pi_new_rec sale_item%rowtype,
@@ -175,7 +179,7 @@ create or replace package body sale_pack is
                 pi_new_rec.prd_amount);
     end;
 
-    -- Триггер запрещающий менять без API
+-- Триггер запрещающий менять без API
     procedure
         sale_tr_body_restrict is
     begin
