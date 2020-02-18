@@ -1,5 +1,3 @@
-drop table sale;
-
 create table sale
 (
     sale_id    number        not null,

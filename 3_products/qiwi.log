@@ -1,0 +1,201 @@
+>>>>>>> ROLLBACK <<<<<<<<<<
+
+Table dropped.
+
+
+Sequence dropped.
+
+
+Table dropped.
+
+
+Sequence dropped.
+
+
+Table dropped.
+
+
+Sequence dropped.
+
+
+Table dropped.
+
+
+Sequence dropped.
+
+
+Table dropped.
+
+
+Sequence dropped.
+
+>>>>>>> PRODUCT <<<<<<<<<<
+
+Table created.
+
+
+Table altered.
+
+
+Sequence created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+99 rows created.
+
+
+Commit complete.
+
+>>>>>>> PRODUCT_STOCK<<<<<<<<<<
+
+Table created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Table altered.
+
+
+Sequence created.
+
+
+Table altered.
+
+
+Table altered.
+
+
+Index created.
+
+
+99 rows created.
+
+
+Commit complete.
+
+>>>>>>> SALE <<<<<<<<<<
+
+Table created.
+
+
+Table altered.
+
+
+Sequence created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+>>>>>>> SALE ITEM <<<<<<<<<<
+
+Table created.
+
+
+Table altered.
+
+
+Sequence created.
+
+
+Table altered.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+>>>>>>> SALE_ITEM_AUD <<<<<<<<<<
+
+Table created.
+
+
+Table altered.
+
+
+Sequence created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+>>>>>>> SALE_PACK <<<<<<<<<<
+
+Package created.
+
+
+Package body created.
+
+>>>>>>> TRIGGERS <<<<<<<<<<
+
+Trigger created.
+
+
+Trigger created.
+
+
+Trigger created.
+
+
+Trigger created.
+
+
+Trigger created.
+
+
+Trigger created.
+
+SQL> exit

@@ -1,5 +1,3 @@
-drop table sale_item_aud;
-
 create table sale_item_aud
 (
     sia_id     number not null,

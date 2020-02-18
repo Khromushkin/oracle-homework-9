@@ -1,5 +1,3 @@
-drop table product cascade constraints;
-
 create table product
 (
     prd_id   number             not null,
